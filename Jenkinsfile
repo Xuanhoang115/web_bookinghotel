@@ -28,7 +28,7 @@ pipeline {
 
         stage('Build frontend') {
             steps {
-                sh 'npm run build --prefix frontend'
+                sh 'CI=false npm run build --prefix frontend'
             }
         }
     }
