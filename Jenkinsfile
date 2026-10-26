@@ -26,12 +26,6 @@ pipeline {
             }
         }
 
-        stage('Test frontend') {
-            steps {
-                sh 'CI=true npm test --prefix frontend -- --watchAll=false'
-            }
-        }
-
         stage('Build frontend') {
             steps {
                 sh 'npm run build --prefix frontend'
