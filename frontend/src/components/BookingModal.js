@@ -146,9 +146,11 @@ const BookingModal = ({
                 <option value="" disabled>
                   Chọn phương thức thanh toán
                 </option>
-                <option value="credit">Thẻ tín dụng</option>
-                <option value="paypal">PayPal</option>
-                <option value="bank">Chuyển khoản ngân hàng</option>
+                <option value="vnpay">VNPay</option>
+                <option value="momo">MoMo</option>
+                <option value="cash">Tiền mặt</option>
+                <option value="credit">Thanh toán bằng thẻ</option>
+                
               </select>
             </div>
 

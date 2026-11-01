@@ -21,6 +21,8 @@ app.use('/api/bookings', bookingRoutes)
 app.use('/api/news',newsRouter)
 app.use('/api/facilities',facilities)
 app.use('/uploads', express.static('uploads'));
+app.use('/api/payments', require('./routes/payments'));
+
 // Kết nối MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Đã kết nối MongoDB thành công!'))

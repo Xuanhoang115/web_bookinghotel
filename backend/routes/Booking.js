@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
-
+const Payment = require('../models/Payment');
 // 🔍 Lấy danh sách đặt phòng theo userId
 router.get('/user/:userId', async (req, res) => {
   try {
@@ -18,21 +18,52 @@ router.get('/user/:userId', async (req, res) => {
 
 // 🆕 Tạo mới đơn đặt phòng
 router.post('/', async (req, res) => {
-  try {
-    const { roomId, userId, name, email, phone, paymentMethod, quantity, totalPrice } = req.body;
+  let savedBooking;
 
-    // Kiểm tra roomId hợp lệ
+  try {
+    const {
+      roomId,
+      userId,
+      name,
+      email,
+      phone,
+      paymentMethod,
+      quantity,
+    } = req.body;
+
+    const allowedMethods = ['card', 'momo', 'vnpay', 'pay_at_hotel'];
+
     if (!mongoose.Types.ObjectId.isValid(roomId)) {
       return res.status(400).json({ message: 'roomId không hợp lệ' });
     }
 
-    // Kiểm tra phòng tồn tại
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'userId không hợp lệ' });
+    }
+
+    if (!allowedMethods.includes(paymentMethod)) {
+      return res.status(400).json({ message: 'Phương thức thanh toán không hợp lệ' });
+    }
+
     const room = await Room.findById(roomId);
     if (!room) {
       return res.status(404).json({ message: 'Phòng không tồn tại' });
     }
 
-    // Tạo đơn đặt phòng
+    const roomPrice = Number(String(room.price ?? '').replace(/[^\d.-]/g, ''));
+    const roomQuantity = Number(quantity);
+
+    if (!Number.isFinite(roomPrice) || roomPrice < 0) {
+      return res.status(400).json({ message: 'Giá phòng không hợp lệ' });
+    }
+
+    if (!Number.isInteger(roomQuantity) || roomQuantity < 1) {
+      return res.status(400).json({ message: 'Số lượng phòng không hợp lệ' });
+    }
+
+    // Tính lại ở backend, không lấy totalPrice do frontend gửi lên
+    const totalPrice = roomPrice * roomQuantity;
+
     const newBooking = new Booking({
       userId,
       roomId,
@@ -40,21 +71,40 @@ router.post('/', async (req, res) => {
       email,
       phone,
       paymentMethod,
-      quantity,
+      quantity: roomQuantity,
       totalPrice,
     });
 
-    const savedBooking = await newBooking.save();
+    savedBooking = await newBooking.save();
 
-    // Populate dữ liệu phòng và người dùng
+    const payment = await Payment.create({
+      bookingId: savedBooking._id,
+      userId,
+      method: paymentMethod,
+      amount: totalPrice,
+      status: 'pending',
+      transactionRef: `PAY-${savedBooking._id}-${Date.now()}`,
+    });
+
     const populatedBooking = await Booking.findById(savedBooking._id)
       .populate('roomId')
       .populate('userId');
 
-    res.status(201).json(populatedBooking);
+    res.status(201).json({
+      booking: populatedBooking,
+      payment,
+    });
   } catch (error) {
+    // Nếu tạo Payment thất bại thì xóa booking vừa tạo để tránh đơn thiếu thanh toán
+    if (savedBooking) {
+      await Booking.findByIdAndDelete(savedBooking._id).catch(() => {});
+    }
+
     console.error('Lỗi khi đặt phòng:', error.message);
-    res.status(500).json({ message: 'Lỗi khi đặt phòng', error: error.message });
+    res.status(500).json({
+      message: 'Lỗi khi tạo đơn đặt phòng/thanh toán',
+      error: error.message,
+    });
   }
 });
 

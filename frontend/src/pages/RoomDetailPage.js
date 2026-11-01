@@ -28,8 +28,10 @@
 
     const [newReview, setNewReview] = useState("");
     const [reviews, setReviews] = useState([]);
-    const user = JSON.parse(localStorage.getItem('loggedInUser'));
-    const userName = user?.fullName || "Khách hàng mới";
+  const storedUser = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+const user = storedUser?.user || storedUser;
+const userId = user?.id || user?._id;
+const userName = user?.fullName || "Khách hàng mới";
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRooms, setSelectedRooms] = useState([]);
