@@ -97,7 +97,7 @@ router.post('/:bookingId/create-payment-url', async (req, res) => {
 
     // Khách chọn thẻ thì dùng kênh thẻ quốc tế
     if (payment.method === 'card') {
-      paymentData.vnp_BankCode = 'INTCARD';
+      paymentData.vnp_BankCode = 'VNBANK';
     }
 
     const paymentUrl = vnpay.buildPaymentUrl(paymentData);
