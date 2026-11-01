@@ -19,8 +19,8 @@ const VNPAY_RETURN_URL =
 const FRONTEND_RETURN_URL = 'http://localhost:3000/booking';
 
 const vnpay = new VNPay({
-    tmnCode: "0KVV37KI",
-    secureSecret:"KPHUV1R0PQDKHA003MX6P737SIVYA433",
+    tmnCode: "NI9G38S6",
+    secureSecret:"FCAXPJBKDMUDKEDKOJQLHPTPLXGDAKNU",
     vnpayHost: "https://sandbox.vnpayment.vn",
     testMode: true,
     hashAlgorithm: "SHA512",
